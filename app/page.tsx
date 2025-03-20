@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { Search, ShoppingBag, MapPin, Tag, Store, Phone, Sparkles, Bot } from "lucide-react"
+import { Search, ShoppingBag, MapPin, Tag, Store, Phone, Sparkles, Bot, MessageCircle } from "lucide-react"
 import Link from "next/link"
 import ProductDemo from "./components/product-demo"
 import FeatureCard from "./components/feature-card"
@@ -11,24 +11,59 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Navbar */}
-      <nav className="container mx-auto py-4 px-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <ShoppingBag className="h-6 w-6 text-primary" />
-          <span className="font-bold text-xl">Comprandito</span>
+      <nav className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 backdrop-blur-md bg-white/80 border-b border-gray-200/20">
+        <div className="container mx-auto py-4 px-4 flex justify-between items-center">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <ShoppingBag className="h-6 w-6 text-primary" />
+            <span className="font-bold text-xl">Comprandito</span>
+          </Link>
+          <div className="hidden md:flex gap-8">
+            <Link 
+              href="#caracteristicas" 
+              className="group flex items-center gap-2 px-3 py-2 rounded-full hover:bg-primary/5 transition-all duration-300"
+            >
+              <Sparkles className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
+              <span className="text-gray-600 group-hover:text-primary transition-colors relative">
+                Características
+                <span className="absolute inset-x-0 -bottom-1 h-px bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+              </span>
+            </Link>
+            <Link 
+              href="#como-funciona" 
+              className="group flex items-center gap-2 px-3 py-2 rounded-full hover:bg-primary/5 transition-all duration-300"
+            >
+              <Bot className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
+              <span className="text-gray-600 group-hover:text-primary transition-colors relative">
+                Cómo Funciona
+                <span className="absolute inset-x-0 -bottom-1 h-px bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+              </span>
+            </Link>
+            <Link 
+              href="#testimonios" 
+              className="group flex items-center gap-2 px-3 py-2 rounded-full hover:bg-primary/5 transition-all duration-300"
+            >
+              <MessageCircle className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
+              <span className="text-gray-600 group-hover:text-primary transition-colors relative">
+                Testimonios
+                <span className="absolute inset-x-0 -bottom-1 h-px bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></span>
+              </span>
+            </Link>
+          </div>
+          <div className="flex gap-3">
+            <Link href="/auth/login">
+              <Button variant="outline" className="text-primary border-primary hover:bg-primary/5 transition-colors duration-300">
+                Iniciar Sesión
+              </Button>
+            </Link>
+            <Link href="/auth/register">
+              <Button className="bg-primary text-white hover:bg-primary/90 transition-colors duration-300 shadow-md hover:shadow-lg">
+                Registrarse
+              </Button>
+            </Link>
+          </div>
         </div>
-        <div className="hidden md:flex gap-6">
-          <Link href="#caracteristicas" className="hover:text-primary transition-colors">
-            Características
-          </Link>
-          <Link href="#como-funciona" className="hover:text-primary transition-colors">
-            Cómo Funciona
-          </Link>
-          <Link href="#testimonios" className="hover:text-primary transition-colors">
-            Testimonios
-          </Link>
-        </div>
-        <Button className="bg-secondary text-secondary-foreground hover:bg-secondary/90">Descargar App</Button>
       </nav>
+      <div className="h-[72px]"></div> {/* Espaciador para compensar el header fijo */}
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 flex flex-col md:flex-row items-center gap-12">
@@ -45,13 +80,18 @@ export default function Home() {
             comprar lo que necesitas.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button size="lg" className="gap-2 group">
-              <Search className="h-5 w-5 group-hover:animate-wave" />
-              Probar Ahora
-            </Button>
-            <Button size="lg" variant="outline" className="border-secondary text-primary hover:bg-secondary/10">
-              Ver Demo
-            </Button>
+            <Link href="/auth/register">
+              <Button size="lg" className="bg-primary text-white hover:bg-primary/90 gap-2 group">
+                <Search className="h-5 w-5 group-hover:animate-wave" />
+                Registrarse Gratis
+              </Button>
+            </Link>
+            <Link href="/auth/login">
+              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10 gap-2">
+                <ShoppingBag className="h-5 w-5" />
+                Iniciar Sesión
+              </Button>
+            </Link>
           </div>
           <div className="pt-4 flex items-center gap-2 text-sm text-gray-500">
             <span className="bg-secondary/20 text-primary px-2 py-1 rounded-full text-xs font-medium">LOCAL</span>
@@ -110,8 +150,9 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <Button className="mt-4 bg-secondary text-secondary-foreground hover:bg-secondary/90">
-                Descubrir Más
+              <Button className="mt-4 bg-primary text-white hover:bg-primary/90 gap-2">
+                <Bot className="h-5 w-5" />
+                Probar IA Ahora
               </Button>
             </div>
           </div>
@@ -257,8 +298,9 @@ export default function Home() {
                 <p className="text-gray-600 mb-4">
                   Aquí se mostraría un mapa interactivo de Tulcán con las tiendas disponibles
                 </p>
-                <Button className="bg-secondary text-secondary-foreground hover:bg-secondary/90">
-                  Ver tiendas cercanas
+                <Button className="bg-primary text-white hover:bg-primary/90 gap-2">
+                  <Store className="h-5 w-5" />
+                  Descubrir Tiendas
                 </Button>
               </div>
             </div>
@@ -298,13 +340,18 @@ export default function Home() {
                 ahora y descubre una nueva forma de comprar en tu ciudad.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Button size="lg" className="bg-secondary text-secondary-foreground hover:bg-secondary/90 gap-2 group">
-                  <Search className="h-5 w-5 group-hover:animate-wave" />
-                  Probar Ahora
-                </Button>
-                <Button size="lg" variant="outline" className="bg-transparent border-white hover:bg-white/10">
-                  Saber Más
-                </Button>
+                <Link href="/auth/register">
+                  <Button size="lg" className="bg-white text-primary hover:bg-white/90 gap-2 group">
+                    <ShoppingBag className="h-5 w-5 group-hover:animate-wave" />
+                    Registrarse Gratis
+                  </Button>
+                </Link>
+                <Link href="/auth/login">
+                  <Button size="lg" variant="outline" className="bg-transparent border-white text-white hover:bg-white/10 gap-2">
+                    <Search className="h-5 w-5" />
+                    Iniciar Sesión
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
