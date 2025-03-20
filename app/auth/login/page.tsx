@@ -1,89 +1,126 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import Link from "next/link"
 import { ShoppingBag } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (searchParams?.get("registered")) {
+      setSuccess("Registro exitoso. Por favor inicia sesión.")
+    }
+  }, [searchParams])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Aquí se implementará la lógica de inicio de sesión cuando tengamos la base de datos
-    console.log("Login attempt:", { email, password })
+    setError("")
+    setLoading(true)
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al iniciar sesión")
+      }
+
+      // Guardar el token en localStorage
+      localStorage.setItem("token", data.token)
+      localStorage.setItem("user", JSON.stringify(data.user))
+
+      // Redireccionar a la página principal
+      router.push("/")
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="container mx-auto flex items-center justify-center min-h-screen p-4">
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <div className="flex justify-center mb-6">
-            <Link href="/" className="flex items-center gap-2">
-              <ShoppingBag className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold">Comprandito</span>
-            </Link>
+        <CardHeader className="space-y-1 flex flex-col items-center">
+          <div className="flex items-center gap-2">
+            <ShoppingBag className="h-8 w-8 text-primary" />
+            <h2 className="text-2xl font-bold">Comprandito</h2>
           </div>
-          <h2 className="text-center text-3xl font-bold tracking-tight">
-            Iniciar Sesión
-          </h2>
-          <p className="text-center text-sm text-gray-600 mt-2">
-            ¿No tienes una cuenta?{" "}
-            <Link href="/auth/register" className="text-primary hover:text-primary/90">
-              Regístrate aquí
-            </Link>
-          </p>
+          <p className="text-gray-500">Inicia sesión en tu cuenta</p>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Correo electrónico
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="correo@ejemplo.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
-                Contraseña
-              </label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/90"
-                />
-                <label htmlFor="remember" className="ml-2 block text-sm text-gray-900">
-                  Recordarme
-                </label>
+            {error && (
+              <div className="p-3 rounded-lg bg-red-50 text-red-500 text-sm">
+                {error}
               </div>
-              <Link href="/auth/forgot-password" className="text-sm text-primary hover:text-primary/90">
-                ¿Olvidaste tu contraseña?
-              </Link>
+            )}
+            {success && (
+              <Alert className="bg-green-50 text-green-600 border-green-200">
+                <AlertDescription>{success}</AlertDescription>
+              </Alert>
+            )}
+            <div className="space-y-2">
+              <Input
+                type="email"
+                placeholder="Correo electrónico"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Input
+                type="password"
+                placeholder="Contraseña"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+                required
+              />
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full bg-primary text-white hover:bg-primary/90">
-              Iniciar Sesión
+          <CardFooter className="flex flex-col space-y-4">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? "Iniciando sesión..." : "Iniciar sesión"}
             </Button>
+            <div className="text-center text-sm">
+              ¿No tienes una cuenta?{" "}
+              <Link
+                href="/auth/register"
+                className="text-primary hover:underline"
+              >
+                Regístrate
+              </Link>
+            </div>
           </CardFooter>
         </form>
       </Card>

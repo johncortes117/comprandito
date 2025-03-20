@@ -6,8 +6,12 @@ import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import Link from "next/link"
 import { ShoppingBag } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export default function RegisterPage() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -15,115 +19,124 @@ export default function RegisterPage() {
     confirmPassword: ""
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Aquí se implementará la lógica de registro cuando tengamos la base de datos
-    console.log("Register attempt:", formData)
-  }
+    setError("")
+    setLoading(true)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    if (formData.password !== formData.confirmPassword) {
+      setError("Las contraseñas no coinciden")
+      setLoading(false)
+      return
+    }
+
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al registrar usuario")
+      }
+
+      // Registro exitoso, redirigir al login
+      router.push("/auth/login?registered=true")
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="container mx-auto flex items-center justify-center min-h-screen p-4">
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <div className="flex justify-center mb-6">
-            <Link href="/" className="flex items-center gap-2">
-              <ShoppingBag className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold">Comprandito</span>
-            </Link>
+        <CardHeader className="space-y-1 flex flex-col items-center">
+          <div className="flex items-center gap-2">
+            <ShoppingBag className="h-8 w-8 text-primary" />
+            <h2 className="text-2xl font-bold">Comprandito</h2>
           </div>
-          <h2 className="text-center text-3xl font-bold tracking-tight">
-            Crear una cuenta
-          </h2>
-          <p className="text-center text-sm text-gray-600 mt-2">
-            ¿Ya tienes una cuenta?{" "}
-            <Link href="/auth/login" className="text-primary hover:text-primary/90">
-              Inicia sesión aquí
-            </Link>
-          </p>
+          <p className="text-gray-500">Crea tu cuenta para empezar</p>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
+            {error && (
+              <div className="p-3 rounded-lg bg-red-50 text-red-500 text-sm">
+                {error}
+              </div>
+            )}
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">
-                Nombre completo
-              </label>
               <Input
-                id="name"
-                name="name"
                 type="text"
-                placeholder="Juan Pérez"
+                placeholder="Nombre completo"
                 value={formData.name}
-                onChange={handleChange}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
                 required
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Correo electrónico
-              </label>
               <Input
-                id="email"
-                name="email"
                 type="email"
-                placeholder="correo@ejemplo.com"
+                placeholder="Correo electrónico"
                 value={formData.email}
-                onChange={handleChange}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 required
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
-                Contraseña
-              </label>
               <Input
-                id="password"
-                name="password"
                 type="password"
+                placeholder="Contraseña"
                 value={formData.password}
-                onChange={handleChange}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 required
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="text-sm font-medium">
-                Confirmar contraseña
-              </label>
               <Input
-                id="confirmPassword"
-                name="confirmPassword"
                 type="password"
+                placeholder="Confirmar contraseña"
                 value={formData.confirmPassword}
-                onChange={handleChange}
+                onChange={(e) =>
+                  setFormData({ ...formData, confirmPassword: e.target.value })
+                }
                 required
               />
-            </div>
-            <div className="flex items-center">
-              <input
-                id="terms"
-                type="checkbox"
-                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary/90"
-                required
-              />
-              <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
-                Acepto los{" "}
-                <Link href="/terms" className="text-primary hover:text-primary/90">
-                  términos y condiciones
-                </Link>
-              </label>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full bg-primary text-white hover:bg-primary/90">
-              Registrarse
+          <CardFooter className="flex flex-col space-y-4">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? "Registrando..." : "Registrarse"}
             </Button>
+            <div className="text-center text-sm">
+              ¿Ya tienes una cuenta?{" "}
+              <Link
+                href="/auth/login"
+                className="text-primary hover:underline"
+              >
+                Inicia sesión
+              </Link>
+            </div>
           </CardFooter>
         </form>
       </Card>
